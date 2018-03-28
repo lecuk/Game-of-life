@@ -6,7 +6,31 @@ using System.Threading;
 
 namespace Game_of_life.Classes
 {
-    struct SimulationOptions
+    public struct Point
+    {
+        public int x;
+        public int y;
+
+        public Point(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public static bool operator == (Point p1, Point p2)
+        {
+            return (p1.x == p2.x && p1.y == p2.y);
+        }
+
+        public static bool operator != (Point p1, Point p2)
+        {
+            return (p1.x != p2.x | p1.y != p2.y);
+        }
+
+        public static Point OutOfBounds = new Point(-666, -666);
+    }
+
+    public struct SimulationOptions
     {
         public double frameDuration;
 
@@ -23,9 +47,29 @@ namespace Game_of_life.Classes
             killConditions = k;
             this.connectEdges = connectEdges;
         }
+
+        public static SimulationOptions Default 
+        {
+            get
+            {
+                int FPS = 30;
+                bool[] birthConditions = new bool[9];
+                bool[] killConditions = new bool[9];
+                birthConditions[3] = true;
+                killConditions[0] = true;
+                killConditions[1] = true;
+                killConditions[4] = true;
+                killConditions[5] = true;
+                killConditions[6] = true;
+                killConditions[7] = true;
+                killConditions[8] = true;
+                bool connectEdges = true;
+                return new SimulationOptions(FPS, birthConditions, killConditions, connectEdges);
+            }
+        }
     }
 
-    class Simulation
+    public class Simulation
     {
         public const int NeighbourCountCombinations = 9;
 
@@ -34,13 +78,13 @@ namespace Game_of_life.Classes
 
         readonly bool[,] cells;
         readonly bool[,] nextUpdateCells;
-        readonly bool[,] needManualChange;
-        readonly bool[,] manualChangeValues;
+        readonly Dictionary<Point, bool> manualChanges;
+        private bool clear = false;
 
         private SimulationOptions CurrentOptions;
         private SimulationOptions nextFrameOptions;
         private bool NeedUpdateOptions = false;
-
+        
         private Thread workThread;
         private bool isWorking = false;
         public bool IsWorking
@@ -78,74 +122,86 @@ namespace Game_of_life.Classes
             }
         }
 
+        private int cellsAlive;
+        public int CellsAlive
+        {
+            get
+            {
+                return cellsAlive;
+            }
+        }
+
         public delegate void OnUpdate();
         public event OnUpdate Updated;
 
-        public delegate void OnCellStateChange(int x, int y);
+        public delegate void OnCellStateChange(Point p);
         public event OnCellStateChange CellStateChanged;
 
-        public bool GetCellState(int x, int y)
+        public bool GetCellState(Point p)
         {
-            if (ConnectedEdgesPosition(ref x, ref y))
-            {
-                return cells[x, y];
-            }
+            Point tp = ConnectedEdgesPosition(p);
+            if (tp != Point.OutOfBounds)
+                return cells[tp.x, tp.y];
             return false;
         }
 
-        public void SetCellState(int x, int y, bool state)
+        public void SetCellState(Point p, bool state)
         {
-            if (ConnectedEdgesPosition(ref x, ref y))
-            {
-                nextUpdateCells[x, y] = state;
-            }
+            Point tp = ConnectedEdgesPosition(p);
+            if (tp != Point.OutOfBounds)
+                nextUpdateCells[tp.x, tp.y] = state;
         }
 
-        bool ConnectedEdgesPosition(ref int x, ref int y)
+        Point ConnectedEdgesPosition(Point p)
         {
             if (CurrentOptions.connectEdges)
             {
-                if (x < 0)
-                    x = maxX;
+                if (p.x < 0)
+                    p.x = maxX;
 
-                if (x > maxX)
-                    x = 0;
+                if (p.x > maxX)
+                    p.x = 0;
 
-                if (y < 0)
-                    y = maxY;
+                if (p.y < 0)
+                    p.y = maxY;
 
-                if (y > maxY)
-                    y = 0;
+                if (p.y > maxY)
+                    p.y = 0;
 
-                return true;
+                return p;
             }
             else
             {
-                if (IsInBounds(x, y))
-                    return true;
+                if (IsInBounds(p))
+                    return p;
             }
-            return false;
+            return Point.OutOfBounds;
         }
 
-        public bool IsInBounds(int x, int y)
+        public bool IsInBounds(Point p)
         {
-            return (x >= 0 && x <= maxX && y >= 0 && y <= maxY);
+            return (p.x >= 0 && p.x <= maxX && p.y >= 0 && p.y <= maxY);
         }
 
-        public int GetNeighbourCount(int x, int y)
+        public int GetNeighbourCount(Point p)
         {
             int count = 0;
 
-            if (GetCellState(x - 1, y - 1)) count++;
-            if (GetCellState(x - 1, y    )) count++;
-            if (GetCellState(x - 1, y + 1)) count++;
-            if (GetCellState(x    , y - 1)) count++;
-            if (GetCellState(x    , y + 1)) count++;
-            if (GetCellState(x + 1, y - 1)) count++;
-            if (GetCellState(x + 1, y    )) count++;
-            if (GetCellState(x + 1, y + 1)) count++;
+            if (GetCellState(new Point(p.x - 1, p.y - 1))) count++;
+            if (GetCellState(new Point(p.x - 1, p.y    ))) count++;
+            if (GetCellState(new Point(p.x - 1, p.y + 1))) count++;
+            if (GetCellState(new Point(p.x    , p.y - 1))) count++;
+            if (GetCellState(new Point(p.x    , p.y + 1))) count++;
+            if (GetCellState(new Point(p.x + 1, p.y - 1))) count++;
+            if (GetCellState(new Point(p.x + 1, p.y    ))) count++;
+            if (GetCellState(new Point(p.x + 1, p.y + 1))) count++;
 
             return count;
+        }
+
+        public SimulationOptions GetCurrentOptions()
+        {
+            return CurrentOptions;
         }
 
         public void UpdateOptionsNextFrame(SimulationOptions newOptions)
@@ -199,54 +255,61 @@ namespace Game_of_life.Classes
             {
                 for (int y = 0; y <= maxY; y++)
                 {
-                    UpdateCellState(x, y);
+                    UpdateCellState(new Point(x, y));
                 }
             }
         }
 
-        void SetCellStateNow(int x, int y, bool state)
+        void SetCellStateNow(Point p, bool state)
         {
-            if (ConnectedEdgesPosition(ref x, ref y))
-            {
-                if (state != GetCellState(x, y))
+            Point tp = ConnectedEdgesPosition(p);
+            if (tp != Point.OutOfBounds) {
+                if (state != GetCellState(tp))
                 {
-                    cells[x, y] = state;
-                    CellStateChanged?.Invoke(x, y);
+                    if (state)
+                    {
+                        cellsAlive++;
+                    }
+                    else
+                    {
+                        cellsAlive--;
+                    }
+                    cells[tp.x, tp.y] = state;
+                    CellStateChanged?.Invoke(tp);
                 }
             }
         }
 
         void UpdateAllCells()
         {
-            for (int x = 0; x <= maxX; x++)
-            {
-                for (int y = 0; y <= maxY; y++)
-                {
-                    if (needManualChange[x, y])
-                    {
-                        SetCellStateNow(x, y, manualChangeValues[x, y]);
-                        needManualChange[x, y] = false;
-                    }
-                    else
-                    {
-                        SetCellStateNow(x, y, nextUpdateCells[x, y]);
-                    }
-                }
-            }
+            UpdateNaturallyChangedCells();
+            UpdateManuallyChangedCells();
         }
 
+        object listLocker = new object();
         void UpdateManuallyChangedCells()
         {
-            for (int x = 0; x <= maxX; x++)
+            if (!clear && manualChanges.Count > 0)
             {
-                for (int y = 0; y <= maxY; y++)
+                lock (listLocker)
                 {
-                    if (needManualChange[x, y])
+                    foreach (Point p in manualChanges.Keys)
                     {
-                        SetCellStateNow(x, y, manualChangeValues[x, y]);
-                        needManualChange[x, y] = false;
+                        SetCellStateNow(p, manualChanges[p]);
+                    }
+                    manualChanges.Clear();
+                }
+            }
+            if (clear)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    for (int y = 0; y < height; y++)
+                    {
+                        SetCellStateNow(new Point(x, y), false);
                     }
                 }
+                clear = false;
             }
         }
 
@@ -256,34 +319,37 @@ namespace Game_of_life.Classes
             {
                 for (int y = 0; y <= maxY; y++)
                 {
-                    if (!needManualChange[x, y])
-                    {
-                        SetCellStateNow(x, y, nextUpdateCells[x, y]);
-                    }
+                    SetCellStateNow(new Point(x, y), nextUpdateCells[x, y]);
                 }
             }
         }
 
-        public void ChangeCellStateManually(int x, int y, bool state)
+        public void ChangeCellStateManually(Point p, bool state)
         {
-            if (ConnectedEdgesPosition(ref x, ref y))
+            Point tp = ConnectedEdgesPosition(p);
+            if (tp != Point.OutOfBounds)
             {
-                needManualChange[x, y] = true;
-                manualChangeValues[x, y] = state;
+                if (!manualChanges.ContainsKey(tp))
+                    manualChanges.Add(tp, state);
             }
         }
 
-        void UpdateCellState(int x, int y)
+        void UpdateCellState(Point p)
         {
-            bool alive = GetCellState(x, y);
+            bool alive = GetCellState(p);
             if (alive)
             {
-                SetCellState(x, y, !CurrentOptions.killConditions[GetNeighbourCount(x, y)]);
+                SetCellState(p, !CurrentOptions.killConditions[GetNeighbourCount(p)]);
             }
             else
             {
-                SetCellState(x, y, CurrentOptions.birthConditions[GetNeighbourCount(x, y)]);
+                SetCellState(p, CurrentOptions.birthConditions[GetNeighbourCount(p)]);
             }
+        }
+
+        public void Clear()
+        {
+            clear = true;
         }
 
         public void Pause()
@@ -305,10 +371,15 @@ namespace Game_of_life.Classes
 
         public void UnsafeStop()
         {
-            workThread.Abort();
+            if (isWorking)
+                workThread.Abort();
         }
 
-        public Simulation(int width, int height, SimulationOptions options)
+        public Simulation(int width, int height, SimulationOptions options) : this(width, height, options, null)
+        {
+        }
+
+        public Simulation(int width, int height, SimulationOptions options, List<Point> cellsToAdd)
         {
             this.width = width;
             this.height = height;
@@ -318,10 +389,17 @@ namespace Game_of_life.Classes
 
             cells = new bool[width, height];
             nextUpdateCells = new bool[width, height];
-            needManualChange = new bool[width, height];
-            manualChangeValues = new bool[width, height];
+            manualChanges = new Dictionary<Point, bool>();
 
-            UpdateOptionsNextFrame(options);
+            CurrentOptions = options;
+
+            if (cellsToAdd != null)
+            {
+                foreach(Point p in cellsToAdd)
+                {
+                    SetCellStateNow(p, true);
+                }
+            }
         }
     }
 }

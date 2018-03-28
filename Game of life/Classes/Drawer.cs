@@ -26,11 +26,11 @@ namespace Game_of_life.Classes
             }
         }
 
-        public RectangleF CellRectangle(int x, int y)
+        public RectangleF CellRectangle(Point p)
         {
-            if (SimulationToDraw.IsInBounds(x, y))
+            if (SimulationToDraw.IsInBounds(p))
             {
-                PointF point = new PointF(UnitSize.Width * x, UnitSize.Height * y);
+                PointF point = new PointF(UnitSize.Width * p.x, UnitSize.Height * p.y);
                 return new RectangleF(point, UnitSize);
             }
             return RectangleF.Empty;
@@ -41,30 +41,34 @@ namespace Game_of_life.Classes
             if (NeedGraphUpdate)
                 UpdateGraphics();
 
-            for (int x = 0; x <= SimulationToDraw.maxX; x++)
+            if (SimulationToDraw.IsWorking)
             {
-                for (int y = 0; y <= SimulationToDraw.maxY; y++)
+                for (int x = 0; x <= SimulationToDraw.maxX; x++)
                 {
-                    if (changedPositions[x, y])
+                    for (int y = 0; y <= SimulationToDraw.maxY; y++)
                     {
-                        RectangleF rect = CellRectangle(x, y);
-                        if (SimulationToDraw.GetCellState(x, y))
+                        if (changedPositions[x, y])
                         {
-                            Graph.FillRectangle(Brushes.White, rect);
+                            Point p = new Point(x, y);
+                            RectangleF rect = CellRectangle(p);
+                            if (SimulationToDraw.GetCellState(p))
+                            {
+                                Graph.FillRectangle(Brushes.White, rect);
+                            }
+                            else
+                            {
+                                Graph.FillRectangle(Brushes.Black, rect);
+                            }
+                            changedPositions[x, y] = false;
                         }
-                        else
-                        {
-                            Graph.FillRectangle(Brushes.Black, rect);
-                        }
-                        changedPositions[x, y] = false;
                     }
                 }
             }
         }
 
-        public void RedrawPosition(int x, int y)
+        public void RedrawPosition(Point p)
         {
-            changedPositions[x, y] = true;
+            changedPositions[p.x, p.y] = true;
         }
 
         public void RedrawAllPositions()
@@ -73,7 +77,7 @@ namespace Game_of_life.Classes
             {
                 for (int y = 0; y <= SimulationToDraw.maxY; y++)
                 {
-                    RedrawPosition(x, y);
+                    RedrawPosition(new Point(x, y));
                 }
             }
         }

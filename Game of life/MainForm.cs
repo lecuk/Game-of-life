@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Game_of_life.Classes;
 
@@ -16,9 +14,22 @@ namespace Game_of_life
         Simulation simulation;
         Drawer drawer;
 
+        System.Drawing.Graphics graph;
+
+        Timer updateTimer;
+
         public MainForm()
         {
             InitializeComponent();
+
+            graph = PictureBox_Main.CreateGraphics();
+
+            ResetUICounters();
+
+            updateTimer = new Timer();
+            updateTimer.Interval = 100;
+            updateTimer.Tick += TimerUpdate;
+            updateTimer.Start();
         }
 
         private void CheckedListBox_BirthConditions_SelectedValueChanged(object sender, EventArgs e)
@@ -35,14 +46,7 @@ namespace Game_of_life
 
         private void Button_StartSimulation_Click(object sender, EventArgs e)
         {
-            if (simulation == null)
-            {
-                simulation = new Simulation((int)NumericUpDown_Width.Value, (int)NumericUpDown_Height.Value, CurrentOptions);
-                drawer = new Drawer(PictureBox_Main.CreateGraphics(), PictureBox_Main.DisplayRectangle, simulation);
-                simulation.Updated += drawer.Draw;
-                simulation.CellStateChanged += drawer.RedrawPosition;
-                simulation.Simulate();
-            }
+            SimulationCreatorForm form = SimulationCreatorForm.OpenDialog(this);
         }
 
         public bool[] BirthConditions
@@ -81,7 +85,7 @@ namespace Game_of_life
 
         void ClearScreen()
         {
-            PictureBox_Main.CreateGraphics().Clear(Color.Black);
+            PictureBox_Main.CreateGraphics().Clear(System.Drawing.Color.Black);
         }
 
         void UpdateSimulationOptions()
@@ -91,30 +95,46 @@ namespace Game_of_life
         
         private void Button_Pause_Click(object sender, EventArgs e)
         {
-            if (simulation != null )
+            PauseOrContinue();
+        }
+
+        void Pause()
+        {
+            if (simulation != null)
             {
-                if (!simulation.IsPaused)
+                simulation.Pause();
+                Button_Pause.Text = "Continue";
+            }
+        }
+
+        void PauseOrContinue()
+        {
+            if (simulation != null)
+            {
+                if (simulation.IsPaused)
                 {
-                    simulation.Pause();
-                    Button_Pause.Text = "Continue";
+                    Continue();
                 }
                 else
                 {
-                    simulation.Continue();
-                    Button_Pause.Text = "Pause";
+                    Pause();
                 }
+            }
+        }
+
+        void Continue()
+        {
+            if (simulation != null)
+            {
+                simulation.Continue();
+                Button_Pause.Text = "Pause";
             }
         }
 
         private void Button_Stop_Click(object sender, EventArgs e)
         {
             if (simulation != null)
-                simulation.SafeStop();
-
-            simulation = null;
-            drawer = null;
-
-            ClearScreen();
+                simulation.Clear();
         }
 
         private void PictureBox_Main_Click(object sender, EventArgs e)
@@ -148,13 +168,14 @@ namespace Game_of_life
                 float h = drawer.UnitSize.Height;
                 int x = (int)((e.X) / w);
                 int y = (int)((e.Y) / h);
+                Point p = new Point(x, y);
 
-                if (simulation.IsInBounds(x, y))
+                if (simulation.IsInBounds(p))
                 {
                     if (e.Button == MouseButtons.Left)
-                        simulation.ChangeCellStateManually(x, y, true);
+                        simulation.ChangeCellStateManually(p, true);
                     if (e.Button == MouseButtons.Right)
-                        simulation.ChangeCellStateManually(x, y, false);
+                        simulation.ChangeCellStateManually(p, false);
                 }
             }
         }
@@ -169,10 +190,11 @@ namespace Game_of_life
                     float h = drawer.UnitSize.Height;
                     int x = (int)((e.X) / w);
                     int y = (int)((e.Y) / h);
+                    Point p = new Point(x, y);
 
-                    if (simulation.IsInBounds(x, y))
+                    if (simulation.IsInBounds(p))
                     {
-                        simulation.ChangeCellStateManually(x, y, true);
+                        simulation.ChangeCellStateManually(p, true);
                     }
                 }
             }
@@ -185,10 +207,11 @@ namespace Game_of_life
                     float h = drawer.UnitSize.Height;
                     int x = (int)((e.X) / w);
                     int y = (int)((e.Y) / h);
+                    Point p = new Point(x, y);
 
-                    if (simulation.IsInBounds(x, y))
+                    if (simulation.IsInBounds(p))
                     {
-                        simulation.ChangeCellStateManually(x, y, false);
+                        simulation.ChangeCellStateManually(p, false);
                     }
                 }
             }
@@ -196,8 +219,83 @@ namespace Game_of_life
 
         private void MainForm_ResizeEnd(object sender, EventArgs e)
         {
-            drawer?.UpdateGraphicsNextFrame(PictureBox_Main.CreateGraphics(), PictureBox_Main.DisplayRectangle);
+            graph = PictureBox_Main.CreateGraphics();
+            drawer?.UpdateGraphicsNextFrame(graph, graph.VisibleClipBounds);
             drawer?.RedrawAllPositions();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            SaveCurrentSimulation();
+        }
+
+        public void StartNewSimulation(Simulation simulation)
+        {
+            this.simulation?.SafeStop();
+            this.simulation = simulation;
+            graph = PictureBox_Main.CreateGraphics();
+            drawer = new Drawer(graph, graph.VisibleClipBounds, simulation);
+            simulation.Updated += drawer.Draw;
+            simulation.CellStateChanged += drawer.RedrawPosition;
+            UpdateChildControlsWithNewOptions(simulation.GetCurrentOptions());
+            drawer.RedrawAllPositions();
+            ResetUICounters();
+            simulation.Simulate();
+            Pause();
+        }
+
+        public void UpdateChildControlsWithNewOptions(SimulationOptions newOptions)
+        {
+            for (int i = 0; i <= 8; i++)
+            {
+                CheckedListBox_BirthConditions.SetItemChecked(i, newOptions.birthConditions[i]);
+                CheckedListBox_KillConditions.SetItemChecked(i, newOptions.killConditions[i]);
+            }
+            CheckBox_ConnectEdges.Checked = newOptions.connectEdges;
+            NumericUpDown_FPS.Value = (decimal)(1000.0 / newOptions.frameDuration);
+        }
+
+        void TimerUpdate(object sender, EventArgs e)
+        {
+            UpdateUI();
+        }
+
+        void UpdateUI()
+        {
+            if (simulation != null && simulation.IsWorking)
+            {
+                Label_CellsAlive.Text = $"Cells alive: {simulation?.CellsAlive.ToString()}";
+                Label_Updates.Text = $"Updates: {simulation?.Updates.ToString()}";
+                Label_Frames.Text = $"Frames: {simulation?.Frames.ToString()}";
+            }
+        }
+
+        void ResetUICounters()
+        {
+            Label_CellsAlive.Text = "";
+            Label_Updates.Text = "";
+            Label_Frames.Text = "";
+        }
+
+        private void MainForm_EnabledChanged(object sender, EventArgs e)
+        {
+            drawer?.RedrawAllPositions();
+        }
+
+        public void SaveCurrentSimulation()
+        {
+            DialogResult result = SelectPathDialog.ShowDialog();
+            SelectPathDialog.OverwritePrompt = true;
+            if (result == DialogResult.OK)
+            {
+                string path = SelectPathDialog.FileName;
+                if (path.Substring(path.Length - 5) == ".gols")
+                {
+                    SimulationSaver.Save(simulation, path);
+                }
+                else
+                    MessageBox.Show("Wrong file format! File name should end with '.gols'");
+            }
         }
     }
 }

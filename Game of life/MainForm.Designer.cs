@@ -37,19 +37,20 @@
             this.PictureBox_Main = new System.Windows.Forms.PictureBox();
             this.Button_StartSimulation = new System.Windows.Forms.Button();
             this.Button_Pause = new System.Windows.Forms.Button();
-            this.Button_Stop = new System.Windows.Forms.Button();
-            this.NumericUpDown_Width = new System.Windows.Forms.NumericUpDown();
-            this.label1 = new System.Windows.Forms.Label();
-            this.NumericUpDown_Height = new System.Windows.Forms.NumericUpDown();
-            this.label2 = new System.Windows.Forms.Label();
+            this.Button_Clear = new System.Windows.Forms.Button();
             this.CheckBox_ConnectEdges = new System.Windows.Forms.CheckBox();
             this.NumericUpDown_FPS = new System.Windows.Forms.NumericUpDown();
             this.Label_FPS = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
+            this.Label_CellsAlive = new System.Windows.Forms.Label();
+            this.Label_Updates = new System.Windows.Forms.Label();
+            this.Label_Frames = new System.Windows.Forms.Label();
+            this.panel2 = new System.Windows.Forms.Panel();
+            this.SelectPathDialog = new System.Windows.Forms.SaveFileDialog();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox_Main)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.NumericUpDown_Width)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.NumericUpDown_Height)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.NumericUpDown_FPS)).BeginInit();
+            this.panel2.SuspendLayout();
             this.SuspendLayout();
             // 
             // Label_BirthConditions
@@ -94,7 +95,7 @@
             this.panel1.Controls.Add(this.Label_KillConditions);
             this.panel1.Controls.Add(this.Label_Conditions);
             this.panel1.Controls.Add(this.CheckedListBox_BirthConditions);
-            this.panel1.Location = new System.Drawing.Point(12, 12);
+            this.panel1.Location = new System.Drawing.Point(9, 50);
             this.panel1.MaximumSize = new System.Drawing.Size(127, 175);
             this.panel1.MinimumSize = new System.Drawing.Size(127, 175);
             this.panel1.Name = "panel1";
@@ -153,9 +154,9 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.PictureBox_Main.BackColor = System.Drawing.Color.Black;
-            this.PictureBox_Main.Location = new System.Drawing.Point(145, 0);
+            this.PictureBox_Main.Location = new System.Drawing.Point(145, 11);
             this.PictureBox_Main.Name = "PictureBox_Main";
-            this.PictureBox_Main.Size = new System.Drawing.Size(446, 383);
+            this.PictureBox_Main.Size = new System.Drawing.Size(446, 384);
             this.PictureBox_Main.TabIndex = 5;
             this.PictureBox_Main.TabStop = false;
             this.PictureBox_Main.MouseDown += new System.Windows.Forms.MouseEventHandler(this.PictureBox_Main_MouseDown);
@@ -164,7 +165,7 @@
             // Button_StartSimulation
             // 
             this.Button_StartSimulation.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Button_StartSimulation.Location = new System.Drawing.Point(12, 291);
+            this.Button_StartSimulation.Location = new System.Drawing.Point(9, 11);
             this.Button_StartSimulation.Name = "Button_StartSimulation";
             this.Button_StartSimulation.Size = new System.Drawing.Size(127, 33);
             this.Button_StartSimulation.TabIndex = 6;
@@ -182,82 +183,20 @@
             this.Button_Pause.UseVisualStyleBackColor = true;
             this.Button_Pause.Click += new System.EventHandler(this.Button_Pause_Click);
             // 
-            // Button_Stop
+            // Button_Clear
             // 
-            this.Button_Stop.Location = new System.Drawing.Point(78, 330);
-            this.Button_Stop.Name = "Button_Stop";
-            this.Button_Stop.Size = new System.Drawing.Size(61, 23);
-            this.Button_Stop.TabIndex = 8;
-            this.Button_Stop.Text = "Stop";
-            this.Button_Stop.UseVisualStyleBackColor = true;
-            this.Button_Stop.Click += new System.EventHandler(this.Button_Stop_Click);
-            // 
-            // NumericUpDown_Width
-            // 
-            this.NumericUpDown_Width.Location = new System.Drawing.Point(12, 206);
-            this.NumericUpDown_Width.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.NumericUpDown_Width.Minimum = new decimal(new int[] {
-            3,
-            0,
-            0,
-            0});
-            this.NumericUpDown_Width.Name = "NumericUpDown_Width";
-            this.NumericUpDown_Width.Size = new System.Drawing.Size(60, 20);
-            this.NumericUpDown_Width.TabIndex = 9;
-            this.NumericUpDown_Width.Value = new decimal(new int[] {
-            3,
-            0,
-            0,
-            0});
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(23, 190);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
-            this.label1.TabIndex = 10;
-            this.label1.Text = "Width";
-            // 
-            // NumericUpDown_Height
-            // 
-            this.NumericUpDown_Height.Location = new System.Drawing.Point(78, 206);
-            this.NumericUpDown_Height.Maximum = new decimal(new int[] {
-            1000,
-            0,
-            0,
-            0});
-            this.NumericUpDown_Height.Minimum = new decimal(new int[] {
-            3,
-            0,
-            0,
-            0});
-            this.NumericUpDown_Height.Name = "NumericUpDown_Height";
-            this.NumericUpDown_Height.Size = new System.Drawing.Size(61, 20);
-            this.NumericUpDown_Height.TabIndex = 11;
-            this.NumericUpDown_Height.Value = new decimal(new int[] {
-            3,
-            0,
-            0,
-            0});
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(86, 190);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(38, 13);
-            this.label2.TabIndex = 12;
-            this.label2.Text = "Height";
+            this.Button_Clear.Location = new System.Drawing.Point(78, 330);
+            this.Button_Clear.Name = "Button_Clear";
+            this.Button_Clear.Size = new System.Drawing.Size(61, 23);
+            this.Button_Clear.TabIndex = 8;
+            this.Button_Clear.Text = "Clear";
+            this.Button_Clear.UseVisualStyleBackColor = true;
+            this.Button_Clear.Click += new System.EventHandler(this.Button_Stop_Click);
             // 
             // CheckBox_ConnectEdges
             // 
             this.CheckBox_ConnectEdges.AutoSize = true;
-            this.CheckBox_ConnectEdges.Location = new System.Drawing.Point(12, 233);
+            this.CheckBox_ConnectEdges.Location = new System.Drawing.Point(9, 231);
             this.CheckBox_ConnectEdges.Name = "CheckBox_ConnectEdges";
             this.CheckBox_ConnectEdges.Size = new System.Drawing.Size(98, 17);
             this.CheckBox_ConnectEdges.TabIndex = 13;
@@ -272,7 +211,7 @@
             0,
             0,
             0});
-            this.NumericUpDown_FPS.Location = new System.Drawing.Point(12, 257);
+            this.NumericUpDown_FPS.Location = new System.Drawing.Point(9, 256);
             this.NumericUpDown_FPS.Maximum = new decimal(new int[] {
             500,
             0,
@@ -287,7 +226,7 @@
             this.NumericUpDown_FPS.Size = new System.Drawing.Size(60, 20);
             this.NumericUpDown_FPS.TabIndex = 14;
             this.NumericUpDown_FPS.Value = new decimal(new int[] {
-            1,
+            30,
             0,
             0,
             0});
@@ -296,25 +235,74 @@
             // Label_FPS
             // 
             this.Label_FPS.AutoSize = true;
-            this.Label_FPS.Location = new System.Drawing.Point(78, 260);
+            this.Label_FPS.Location = new System.Drawing.Point(72, 258);
             this.Label_FPS.Name = "Label_FPS";
             this.Label_FPS.Size = new System.Drawing.Size(27, 13);
             this.Label_FPS.TabIndex = 15;
             this.Label_FPS.Text = "FPS";
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(12, 359);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(127, 23);
+            this.button1.TabIndex = 16;
+            this.button1.Text = "Save";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // Label_CellsAlive
+            // 
+            this.Label_CellsAlive.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Label_CellsAlive.Location = new System.Drawing.Point(3, 29);
+            this.Label_CellsAlive.Name = "Label_CellsAlive";
+            this.Label_CellsAlive.Size = new System.Drawing.Size(121, 14);
+            this.Label_CellsAlive.TabIndex = 17;
+            this.Label_CellsAlive.Text = "Cells alive: N";
+            this.Label_CellsAlive.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // Label_Updates
+            // 
+            this.Label_Updates.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Label_Updates.Location = new System.Drawing.Point(3, 16);
+            this.Label_Updates.Name = "Label_Updates";
+            this.Label_Updates.Size = new System.Drawing.Size(121, 13);
+            this.Label_Updates.TabIndex = 18;
+            this.Label_Updates.Text = "Updates: N";
+            this.Label_Updates.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // Label_Frames
+            // 
+            this.Label_Frames.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.Label_Frames.Location = new System.Drawing.Point(3, 3);
+            this.Label_Frames.Name = "Label_Frames";
+            this.Label_Frames.Size = new System.Drawing.Size(121, 13);
+            this.Label_Frames.TabIndex = 19;
+            this.Label_Frames.Text = "Frames: N";
+            this.Label_Frames.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // panel2
+            // 
+            this.panel2.BackColor = System.Drawing.SystemColors.HighlightText;
+            this.panel2.Controls.Add(this.Label_Frames);
+            this.panel2.Controls.Add(this.Label_CellsAlive);
+            this.panel2.Controls.Add(this.Label_Updates);
+            this.panel2.Location = new System.Drawing.Point(12, 279);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(127, 45);
+            this.panel2.TabIndex = 20;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(591, 383);
+            this.ClientSize = new System.Drawing.Size(591, 395);
+            this.Controls.Add(this.panel2);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.Label_FPS);
             this.Controls.Add(this.NumericUpDown_FPS);
             this.Controls.Add(this.CheckBox_ConnectEdges);
-            this.Controls.Add(this.label2);
-            this.Controls.Add(this.NumericUpDown_Height);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.NumericUpDown_Width);
-            this.Controls.Add(this.Button_Stop);
+            this.Controls.Add(this.Button_Clear);
             this.Controls.Add(this.Button_Pause);
             this.Controls.Add(this.Button_StartSimulation);
             this.Controls.Add(this.PictureBox_Main);
@@ -323,13 +311,13 @@
             this.Text = "Game of life";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.ResizeEnd += new System.EventHandler(this.MainForm_ResizeEnd);
+            this.EnabledChanged += new System.EventHandler(this.MainForm_EnabledChanged);
             this.SizeChanged += new System.EventHandler(this.MainForm_SizeChanged);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.PictureBox_Main)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.NumericUpDown_Width)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.NumericUpDown_Height)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.NumericUpDown_FPS)).EndInit();
+            this.panel2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -345,14 +333,16 @@
         private System.Windows.Forms.PictureBox PictureBox_Main;
         private System.Windows.Forms.Button Button_StartSimulation;
         private System.Windows.Forms.Button Button_Pause;
-        private System.Windows.Forms.Button Button_Stop;
-        private System.Windows.Forms.NumericUpDown NumericUpDown_Width;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.NumericUpDown NumericUpDown_Height;
-        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Button Button_Clear;
         private System.Windows.Forms.CheckBox CheckBox_ConnectEdges;
         private System.Windows.Forms.NumericUpDown NumericUpDown_FPS;
         private System.Windows.Forms.Label Label_FPS;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label Label_CellsAlive;
+        private System.Windows.Forms.Label Label_Updates;
+        private System.Windows.Forms.Label Label_Frames;
+        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.SaveFileDialog SelectPathDialog;
     }
 }
 
